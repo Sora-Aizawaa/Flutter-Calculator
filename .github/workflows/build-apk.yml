@@ -32,7 +32,7 @@ jobs:
         run: |
           # This step will create the necessary android/ folder to build APK
           # while keeping our pubspec.yaml and lib/main.dart intact!
-          flutter create --org com.example --project-name scientific_calculator temp_app
+          flutter create --org com.soraaizawaa --project-name scientific_calculator temp_app
           mv temp_app/android ./android
           rm -rf temp_app
           
