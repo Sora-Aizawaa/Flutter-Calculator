@@ -1,0 +1,61 @@
+name: Deploy Flutter Web to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Mengatur izin token untuk GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Mencegah deployment yang bertumpuk
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: Generate Flutter Project Structure
+        run: |
+          # Membuat folder web/ yang diperlukan untuk flutter build web
+          flutter create --org com.example --project-name scientific_calculator temp_app
+          mv temp_app/web ./web
+          rm -rf temp_app
+          
+      - name: Install dependencies
+        run: flutter pub get
+        
+      - name: Build Web App
+        # Base href disesuaikan dengan nama repository Anda
+        run: flutter build web --base-href /Flutter-Calculator/
+        
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
